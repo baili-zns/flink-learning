@@ -1,6 +1,7 @@
 package com.zhisheng.examples.batch.accumulator;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.operators.DataSource;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -22,15 +23,23 @@ public class Main {
 
         DataSource<String> dataSource = env.fromElements(WORDS);
 
-        dataSource.flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
-            @Override
-            public void flatMap(String line, Collector<Tuple2<String, Integer>> out) throws Exception {
-                String[] words = line.split("\\W+");
-                for (String word : words) {
-                    out.collect(new Tuple2<>(word, 1));
-                }
+        dataSource.flatMap((String line, Collector<Tuple2<String, Integer>> out) ->{
+            String[] words = line.split("\\W+");
+            for (String word:words
+                 ) {
+                out.collect(new Tuple2<>(word, 1));
             }
         })
+                .returns(Types.TUPLE(Types.STRING, Types.INT))
+//                .flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
+//            @Override
+//            public void flatMap(String line, Collector<Tuple2<String, Integer>> out) throws Exception {
+//                String[] words = line.split("\\W+");
+//                for (String word : words) {
+//                    out.collect(new Tuple2<>(word, 1));
+//                }
+//            }
+//        })
                 .groupBy(0)
                 .sum(1)
                 .print();

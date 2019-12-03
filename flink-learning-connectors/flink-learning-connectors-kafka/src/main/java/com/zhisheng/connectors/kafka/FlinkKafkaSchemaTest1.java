@@ -28,12 +28,14 @@ public class FlinkKafkaSchemaTest1 {
         Properties props = buildKafkaProps(parameterTool);
         //kafka topic list
         List<String> topics = Arrays.asList(parameterTool.get("metrics.topic"));
+//        FlinkKafkaConsumer011<MetricEvent> consumer = new FlinkKafkaConsumer011<>(topics, new MetricSchema(), props);
         FlinkKafkaConsumer011<MetricEvent> consumer = new FlinkKafkaConsumer011<>(topics, new KafkaDeserializationSchemaWrapper<>(new MetricSchema()), props);
 
         DataStreamSource<MetricEvent> data = env.addSource(consumer);
 
-        data.print();
+        data.keyBy("name").print();
 
         env.execute("flink kafka connector test");
+        //{"name":"name1","timestamp":1111111111111,"fields":{"a":1,"b":2},"tags":{"c":3,"d":4}}
     }
 }
